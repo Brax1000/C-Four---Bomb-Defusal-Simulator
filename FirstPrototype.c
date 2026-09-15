@@ -1,3 +1,4 @@
+// 1ST PROTOTYPE
 #include <stdio.h>
 #include <stdlib.h>
 
