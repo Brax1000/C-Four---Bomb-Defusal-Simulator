@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 int main() {
-    srand(42);
+    srand(67);
 
     int difficulty;
     int maxNumber;
