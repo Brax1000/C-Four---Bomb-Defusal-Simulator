@@ -1,4 +1,4 @@
-// 1ST PROTOTYPE
+// 1ST PROTOTYPE -
 #include <stdio.h>
 #include <stdlib.h>
 
