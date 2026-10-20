@@ -1,105 +1,157 @@
-// 1st Prototype
 #include <stdio.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <time.h>
+
+#ifdef _WIN32
+    #include <windows.h>
+#endif
+
+#define EASY 1
+#define INTERMEDIATE 2
+#define HARD 3
+#define INSANE 4
+
+void clearScreen() {
+    #ifdef _WIN32
+        system("cls");   // Windows
+    #else
+        system("clear"); // Linux, macOS, and Unix
+    #endif
+}
+
+void delay(int ms) {
+    if (ms <= 0) return;
+
+    #ifdef _WIN32
+        Sleep((DWORD)ms); // Windows: milliseconds
+    #else
+        struct timespec delayTime;
+
+        delayTime.tv_sec = ms / 1000;
+        delayTime.tv_nsec = (ms % 1000) * 1000000L;
+
+        nanosleep(&delayTime, NULL); // Linux/macOS: nanoseconds
+    #endif
+}
+
+int generateRandomNum(int min, int max) {
+    return rand() % (max - min + 1) + min; // Min and Max is Inclusive
+}
 
 int main() {
     srand(time(NULL));
 
-    int difficulty, maxNumber, i;
-    char again;
+    bool isExit = false;
 
-    do {
-        for (i = 0; i < 40; i++) {
-            printf("=");
-        }
+    while(!isExit) {
+        clearScreen();
+    
+        printf("-- INSTRUCTIONS --------------------------------------\n");
+        printf(" A secret defusal code has been set to arm the bomb.\n");
+        printf(" Guess the correct defusal code to defuse it.\n");
+        printf(" You only have 5 TRIES before the bomb detonates!\n");
+        printf("------------------------------------------------------\n");
         printf("\n");
 
-        printf("       BOMB DEFUSAL SIMULATOR\n");
-        printf("       created by: C-Four\n");
+        int difficulty = 0;
+        printf("----- SELECT DIFFICULTY -----\n");
+        printf("[1] - Easy (1-10)\n");
+        printf("[2] - Intermediate (1-50)\n");
+        printf("[3] - Hard (1-100)\n");
+        printf("[4] - Insane (1-500)\n");
+        printf("-----------------------------\n");
+        printf("Enter: ");
+        scanf("%d", &difficulty);
 
-        for (i = 0; i < 40; i++) {
-            printf("=");
-        }
-        printf("\n");
-
-        printf("\nINSTRUCTIONS:\n");
-        printf("- A secret code has been set to arm the bomb.\n");
-        printf("- Guess the correct code to defuse it.\n");
-        printf("- You only have 5 TRIES before the bomb detonates!\n");
-        printf("- Good luck.\n");
-
-        for (i = 0; i < 40; i++) {
-            printf("-");
-        }
-        printf("\n");
-
-        printf("SELECT DIFFICULTY:\n");
-        printf("1. Easy (1-10)\n");
-        printf("2. Intermediate (1-50)\n");
-        printf("3. Hard (1-100)\n");
-        printf("4. Insane (1-500)\n");
-
-        for (i = 0; i < 40; i++) {
-            printf("-");
-        }
-        printf("\n");
-
-        do {
-            printf("Choose difficulty: ");
-            scanf("%d", &difficulty);
-
-            if (difficulty < 1 || difficulty > 4) {
-                printf("Invalid difficulty. Choose 1-4.\n");
-            }
-        } while (difficulty < 1 || difficulty > 4);
-
-        if (difficulty == 1) {
-            maxNumber = 10;
-        } else if (difficulty == 2) {
-            maxNumber = 50;
-        } else if (difficulty == 3) {
-            maxNumber = 100;
-        } else {
-            maxNumber = 500;
+        // Input validation
+        if (difficulty < 1 || difficulty > 4) {
+            printf("Invalid Input: Expected value from 1 to 4");
+            delay(2000); // Wait two seconds before clearing the screen
+            continue;
         }
 
-        int correctCode = 1 + rand() % maxNumber;
+        int defusalCode = 0;
+        int maxNum = 0;
+        switch(difficulty) {
+            case EASY:
+                maxNum = 10;
+                defusalCode = generateRandomNum(1, maxNum);
+                break;
+            case INTERMEDIATE:
+                maxNum = 50;
+                defusalCode = generateRandomNum(1, maxNum);
+                break;
+            case HARD:
+                maxNum = 100;
+                defusalCode = generateRandomNum(1, maxNum);
+                break;
+            case INSANE:
+                maxNum = 500;
+                defusalCode = generateRandomNum(1, maxNum);
+                break;
+        }
+
         int tries = 5;
-        int bombDefused = 0;
-        int guess;
-
-        printf("\nYou have 5 tries to guess the code between 1-%d before the bomb detonates!\n", maxNumber);
+        bool isDefused = false;
 
         while (tries > 0) {
-            printf("\nTries left: %d\n", tries);
-            printf("Enter code: ");
+            clearScreen();
+
+            printf("You have 5 tries to guess the defusal code between 1-%d before the bomb detonates!\n", maxNum);
+            printf("\n");
+
+            printf("----------------\n");
+            printf("Tries left: %d\n", tries);
+            printf("----------------\n");
+            printf("\n");
+
+            int guess = 0;
+            printf("Enter Code: ");
             scanf("%d", &guess);
+            printf("\n");
 
-            if (guess == correctCode) {
-                printf("Correct code! Bomb defused.\n");
-                bombDefused = 1;
-                break;
-            } else if (guess < correctCode) {
-                printf("Too low!\n");
+            if (guess < defusalCode) {
+                printf("\n- Too low!");
+            } else if (guess > defusalCode) {
+                printf("\n- Too High!");
             } else {
-                printf("Too high!\n");
+                isDefused = true;
+                break; 
             }
-
+            
+            if (tries > 1) {
+                delay(2000);
+            }
             tries--;
         }
+        clearScreen();
 
-        if (!bombDefused) {
-            printf("\nBOOM! The bomb exploded. The code was %d.\n", correctCode);
+        if (isDefused) {
+            printf("-----------------------------\n");
+            printf("Correct code! Bomb defused.\n");
+            printf("-----------------------------\n");
+        } else {
+            printf("---------------------------------------------------------\n");
+            printf("BOOM! The bomb exploded. The defusal code was %d.\n", defusalCode);   
+            printf("---------------------------------------------------------\n");
         }
 
-        printf("\nWould you like to try again?\n");
-        printf("Y for yes | N for no: ");
+        printf("\n");
+
+        char again;
+        printf("--- Would you like to try again? ---\n");
+        printf("[Y] - Yes\n");
+        printf("[N] - No\n");
+        printf("------------------------------------\n");
+        printf("Enter: ");
         scanf(" %c", &again);
 
-    } while (again == 'Y' || again == 'y');
-
-    printf("\nThanks for playing!\n");
+        // Any choice except Y Is NO
+        if (again != 'Y' && again != 'y') {
+            isExit = true;
+        }
+    }
 
     return 0;
 }
